@@ -1,4 +1,5 @@
-import type { CauseCode, Finding, Project, Simulation, WbsNode } from "./types";
+import { NIE_SECTORS } from "./metrics";
+import type { CauseCode, DataSource, Finding, Project, Simulation, WbsNode } from "./types";
 
 function wbs(
   id: string,
@@ -44,7 +45,7 @@ function sim(
   return { id, assumption, delayDays, extraCostCr, revisedCommissioning, spiIfActed, recommendation };
 }
 
-export const SEED_PROJECTS: Project[] = [
+const RAW_PROJECTS = [
   {
     id: "nh48-vadodara",
     code: "NH-48/GJ/6L-14",
@@ -620,7 +621,53 @@ export const SEED_PROJECTS: Project[] = [
     simulations: [],
     decisions: [],
   },
+  {
+    id: "pmgsy-kjr-link",
+    code: "PMGSY/OD/KJR/L-204",
+    name: "PMGSY habitation link: Patna–Ghatgaon",
+    sector: "Road transport",
+    ministry: "Ministry of Rural Development",
+    agency: "Odisha RD",
+    state: "Odisha",
+    stage: "EXECUTION_EXPENDITURE",
+    health: "on-track",
+    originalCostCr: 48,
+    revisedCostCr: 51,
+    expenditureCr: 29,
+    originalStart: "2025-04-01",
+    originalCompletion: "2026-12-31",
+    anticipatedCompletion: "2026-12-31",
+    physicalPct: 58,
+    spi: 0.99,
+    cpi: 0.97,
+    delayDays: 0,
+    causes: [],
+    description:
+      "Below the ₹150 Cr central-sector threshold. Held on the agency ledger only — not on the MoSPI IPMD monitor.",
+    tenderRef: "RD/PMGSY/2025/KJR-204",
+    workOrderNo: "WO/RD/2025/204",
+    contractor: "Local MSME",
+    wbs: [wbs("p9-1", "1.0", "Formation & BT", 70, 58, 48, 29, "RD", "2025-04-01", "2026-12-31")],
+    expenditure: [exp("2026-08", 32, 29, 58)],
+    milestones: [{ id: "m91", name: "BT complete", due: "2026-11-30", status: "due" }],
+    findings: [],
+    simulations: [],
+    decisions: [],
+  },
 ];
+
+function sourceFor(id: string): DataSource {
+  if (id === "jjm-keonjhar" || id === "pmgsy-kjr-link") return "AGENCY_OCMS";
+  if (id === "gec-odisha" || id === "aiims-bbsr") return "LINE_MINISTRY_API";
+  return "DPIIT_IIG_PMG";
+}
+
+export const SEED_PROJECTS: Project[] = RAW_PROJECTS.map((p) => ({
+  ...p,
+  source: sourceFor(p.id),
+  lastIngestAt: p.id === "jjm-keonjhar" ? "2026-07-12T08:00:00.000Z" : "2026-09-08T06:00:00.000Z",
+  nieScore: NIE_SECTORS[p.sector]?.nie ?? 65,
+})) as Project[];
 
 export const PORTFOLIO_NOTE =
   "Demo corpus modelled on MoSPI IPMD / OCMS-style central sector monitoring: cost ≥ ₹150 Cr, time & cost overrun, cause codes, and PRAGATI review packs.";

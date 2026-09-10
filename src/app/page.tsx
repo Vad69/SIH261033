@@ -11,16 +11,17 @@ export default function HomePage() {
           PRAGATI NXT — a web-based integrated project-monitoring platform
         </h1>
         <p className="mt-5 max-w-2xl text-lg text-[var(--ink-soft)]">
-          MoSPI already watches central-sector infrastructure through OCMS / PAIMANA. This prototype
-          rebuilds that monitor around the full delivery lifecycle, then runs smart automation across
-          every gate: Detect, Explain, Simulate, Decide, Record, Review.
+          One Data, One Entry from DPIIT IIG–PMG, API updates from ministries and agencies, ₹150 Cr
+          capital filter, overrun analytics, and a Detect → Explain → Simulate → Decide → Record → Review
+          loop across tender to handover. Role-based access for IPMD, line ministries, agencies, NITI
+          Aayog, Cabinet Secretariat, and the PRAGATI board.
         </p>
         <div className="mt-8 flex flex-wrap gap-3">
-          <Link href="/dashboard" className="rounded-sm bg-[var(--navy)] px-5 py-2.5 text-sm text-[#f4efe4]">
-            Open the live demo
+          <Link href="/login" className="rounded-sm bg-[var(--navy)] px-5 py-2.5 text-sm text-[#f4efe4]">
+            Sign in with access code
           </Link>
-          <Link href="/lifecycle" className="rounded-sm border border-[var(--navy)] px-5 py-2.5 text-sm">
-            See the lifecycle
+          <Link href="/public" className="rounded-sm border border-[var(--navy)] px-5 py-2.5 text-sm">
+            Public dashboard
           </Link>
         </div>
 
@@ -47,28 +48,6 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
-        </section>
-
-        <section className="mt-12 grid gap-4 md:grid-cols-3">
-          {[
-            {
-              t: "For IPMD / MoSPI",
-              d: "Flash-style portfolio, cause codes, time & cost overrun, and a PRAGATI board pack in one click.",
-            },
-            {
-              t: "For line ministries & agencies",
-              d: "Tender to handover file of record: WBS, supervision, mobilisation, RA bills, commissioning.",
-            },
-            {
-              t: "For the hackathon jury",
-              d: "Eight seeded Indian infrastructure projects. Run a Detect cycle, accept a decision, see the review pack change.",
-            },
-          ].map((c) => (
-            <article key={c.t} className="card rounded-sm p-5">
-              <h3 className="font-serif text-xl">{c.t}</h3>
-              <p className="mt-2 text-sm text-[var(--ink-soft)]">{c.d}</p>
-            </article>
-          ))}
         </section>
       </div>
     </div>

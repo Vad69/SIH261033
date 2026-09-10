@@ -100,4 +100,16 @@ export function stageProgress(stage: LifecycleStage) {
   return Math.round(((stageIndex(stage) + 1) / LIFECYCLE_STAGES.length) * 100);
 }
 
+export const PRE_CONSTRUCTION_STAGES: LifecycleStage[] = [
+  "TENDER",
+  "TENDER_ACCEPTANCE",
+  "WORK_ORDER",
+  "PROJECT_START",
+  "SUPERVISION",
+];
+
+export function isPreConstruction(stage: LifecycleStage) {
+  return PRE_CONSTRUCTION_STAGES.includes(stage);
+}
+
 export { LIFECYCLE_STAGES, AUTOMATION_STEPS };

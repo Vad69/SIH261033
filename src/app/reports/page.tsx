@@ -8,14 +8,14 @@ import { usePlatform } from "../../lib/store";
 import { LIFECYCLE_STAGES } from "../../lib/types";
 
 export default function ReportsPage() {
-  const { state } = usePlatform();
-  const stats = portfolioStats(state.projects);
+  const { monitorProjects } = usePlatform();
+  const stats = portfolioStats(monitorProjects);
   const byStage = LIFECYCLE_STAGES.map((stage) => ({
     stage,
-    n: state.projects.filter((p) => p.stage === stage).length,
+    n: monitorProjects.filter((p) => p.stage === stage).length,
   }));
   const bySector = Object.entries(
-    state.projects.reduce<Record<string, number>>((acc, p) => {
+    monitorProjects.reduce<Record<string, number>>((acc, p) => {
       acc[p.sector] = (acc[p.sector] ?? 0) + 1;
       return acc;
     }, {}),
@@ -26,8 +26,9 @@ export default function ReportsPage() {
       <p className="stamp text-[var(--saffron)]">MoSPI IPMD · monthly flash (demo)</p>
       <h1 className="font-serif text-4xl">Flash report</h1>
       <p className="mt-2 max-w-3xl text-[var(--ink-soft)]">
-        Modelled on PAIMANA / OCMS flash reporting for central-sector projects. Figures below are
-        the seeded demo corpus, not official statistics.
+        Web-generated monthly flash for stakeholders. Figures use standardised units (₹ crore, calendar
+        days, % physical, SPI/CPI) so PMO PRAGATI can pull the same pack via <code>GET /api/pragati</code>.
+        Demo corpus, not official statistics.
       </p>
       <div className="card mt-6 rounded-sm p-5">
         <h2 className="font-serif text-2xl">Headline</h2>
@@ -78,7 +79,7 @@ export default function ReportsPage() {
             </tr>
           </thead>
           <tbody>
-            {state.projects.map((p) => (
+            {monitorProjects.map((p) => (
               <tr key={p.id} className="border-t border-[var(--line)]">
                 <td className="py-2">{p.name}</td>
                 <td>{p.ministry}</td>

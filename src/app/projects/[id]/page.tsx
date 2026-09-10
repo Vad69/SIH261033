@@ -9,14 +9,18 @@ import { SCurve } from "../../../components/SCurve";
 import { StatCard } from "../../../components/StatCard";
 import { StatusBadge } from "../../../components/StatusBadge";
 import { WbsTree } from "../../../components/WbsTree";
+import { SOURCE_LABEL, canRunAutomation, canWriteProject, canReview } from "../../../lib/auth";
 import { CAUSE_LABEL, dateLabel, inrCr, pct } from "../../../lib/format";
-import { STAGE_META } from "../../../lib/lifecycle";
+import { isPreConstruction, STAGE_META } from "../../../lib/lifecycle";
+import { CAPITAL_THRESHOLD_CR, onCentralMonitor } from "../../../lib/metrics";
+import { modelOverrun } from "../../../lib/overrun";
 import { usePlatform } from "../../../lib/store";
 
 export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { state, runCycle, recordDecision, advanceDecision } = usePlatform();
   const project = state.projects.find((p) => p.id === id);
+  const session = state.session;
   const [owner, setOwner] = useState("");
   const [action, setAction] = useState("");
   const [due, setDue] = useState("");
@@ -30,22 +34,25 @@ export default function ProjectDetailPage() {
   }
 
   const projectId = project.id;
+  const writable = canWriteProject(session, project.agency, project.ministry);
+  const runner = session ? canRunAutomation(session.role) : false;
+  const reviewer = session ? canReview(session.role) : false;
+  const model = modelOverrun(project);
+  const onMonitor = onCentralMonitor(project.originalCostCr) || onCentralMonitor(project.revisedCostCr);
 
   function onRecord(e: FormEvent) {
     e.preventDefault();
-    if (!owner || !action || !due) return;
+    if (!owner || !action || !due || !writable) return;
     recordDecision(projectId, { owner, action, due, status: "accepted", notes: "Recorded from project file." });
     setOwner("");
     setAction("");
     setDue("");
   }
 
-  const overrun = ((project.revisedCostCr - project.originalCostCr) / project.originalCostCr) * 100;
-
   return (
     <AppShell>
       <p className="stamp text-[var(--saffron)]">
-        {project.code} · {project.tenderRef}
+        {project.code} · {SOURCE_LABEL[project.source]} · {onMonitor ? `₹${CAPITAL_THRESHOLD_CR} Cr+ monitor` : "below central threshold"}
       </p>
       <div className="mt-1 flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -56,17 +63,20 @@ export default function ProjectDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           <StatusBadge health={project.health} />
-          <button
-            type="button"
-            onClick={() => runCycle(project.id)}
-            className="rounded-sm bg-[var(--navy)] px-4 py-2 text-sm text-[#f4efe4]"
-          >
-            Run Detect → Decide cycle
-          </button>
+          {runner ? (
+            <button
+              type="button"
+              onClick={() => runCycle(project.id)}
+              className="rounded-sm bg-[var(--navy)] px-4 py-2 text-sm text-[#f4efe4]"
+            >
+              Run Detect → Decide cycle
+            </button>
+          ) : null}
         </div>
       </div>
 
       <p className="mt-4 max-w-3xl text-sm text-[var(--ink-soft)]">{project.description}</p>
+      <p className="mt-2 text-sm">{model.narrative}</p>
 
       <div className="mt-6">
         <p className="stamp mb-2 text-[var(--ink-soft)]">Lifecycle gate — {STAGE_META[project.stage].label}</p>
@@ -75,7 +85,7 @@ export default function ProjectDetailPage() {
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Original cost" value={inrCr(project.originalCostCr)} hint={`Overrun ${pct(overrun, 1)}`} />
+        <StatCard label="Original cost" value={inrCr(project.originalCostCr)} hint={`Overrun ${pct(model.costOverrunPct, 1)}`} />
         <StatCard label="Revised cost" value={inrCr(project.revisedCostCr)} hint={`Spent ${inrCr(project.expenditureCr)}`} />
         <StatCard label="Physical progress" value={pct(project.physicalPct)} hint={`SPI ${project.spi.toFixed(2)} · CPI ${project.cpi.toFixed(2)}`} />
         <StatCard
@@ -104,6 +114,10 @@ export default function ProjectDetailPage() {
             <dt className="stamp text-[var(--ink-soft)]">Cause codes</dt>
             <dd>{project.causes.length ? project.causes.map((c) => CAUSE_LABEL[c]).join(" · ") : "None on file"}</dd>
           </div>
+          <div>
+            <dt className="stamp text-[var(--ink-soft)]">Tender ref</dt>
+            <dd>{project.tenderRef}</dd>
+          </div>
         </dl>
       </section>
 
@@ -113,7 +127,9 @@ export default function ProjectDetailPage() {
       </section>
 
       <section className="card mt-6 rounded-sm p-4">
-        <h2 className="font-serif text-2xl">Execution + expenditure</h2>
+        <h2 className="font-serif text-2xl">
+          {isPreConstruction(project.stage) ? "Pre-construction milestones" : "Execution + expenditure"}
+        </h2>
         <SCurve series={project.expenditure} />
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
           {project.milestones.map((m) => (
@@ -175,6 +191,7 @@ export default function ProjectDetailPage() {
 
       <section className="card mt-6 rounded-sm p-4">
         <h2 className="font-serif text-2xl">Decide · Record · Review</h2>
+        {writable ? (
         <form onSubmit={onRecord} className="mt-4 grid gap-2 sm:grid-cols-3">
           <input
             className="rounded-sm border border-[var(--line)] px-3 py-2 text-sm"
@@ -198,6 +215,11 @@ export default function ProjectDetailPage() {
             Record decision
           </button>
         </form>
+        ) : (
+          <p className="mt-3 text-sm text-[var(--ink-soft)]">
+            Read-only on this file. Only the nodal ministry/agency or IPMD may write (One Data, One Entry).
+          </p>
+        )}
         <ul className="mt-4 space-y-3">
           {project.decisions.map((d) => (
             <li key={d.id} className="border-t border-[var(--line)] pt-3 text-sm">
@@ -209,7 +231,7 @@ export default function ProjectDetailPage() {
                 {d.owner} · due {dateLabel(d.due)}
               </p>
               <div className="mt-2 flex gap-2">
-                {d.status === "proposed" ? (
+                {d.status === "proposed" && writable ? (
                   <button
                     type="button"
                     className="underline"
@@ -218,7 +240,7 @@ export default function ProjectDetailPage() {
                     Accept into record
                   </button>
                 ) : null}
-                {d.status === "accepted" ? (
+                {d.status === "accepted" && reviewer ? (
                   <button
                     type="button"
                     className="underline"

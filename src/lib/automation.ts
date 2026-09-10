@@ -1,4 +1,4 @@
-import { LIFECYCLE_STAGES } from "./lifecycle";
+import { isPreConstruction, LIFECYCLE_STAGES } from "./lifecycle";
 import type { Finding, Project, Simulation, WbsNode } from "./types";
 
 function uid(prefix: string) {
@@ -86,6 +86,32 @@ export function detect(project: Project): Finding[] {
       title: "Mobilisation gate incomplete",
       detail: "Plant, camp, and critical materials are not yet at the supervision baseline.",
     });
+  }
+
+  if (isPreConstruction(project.stage)) {
+    const slipped = project.milestones.filter((m) => m.status === "slipped");
+    out.push({
+      id: uid("det"),
+      step: "DETECT",
+      severity: slipped.length ? "watch" : "info",
+      title: "Pre-construction milestone scan",
+      detail: slipped.length
+        ? `${slipped.length} pre-construction milestone(s) slipped (tender / clearance / possession).`
+        : "Tender, acceptance, and statutory gates are on the pre-construction log.",
+    });
+  }
+
+  if (project.lastIngestAt) {
+    const ageDays = (Date.now() - new Date(project.lastIngestAt).getTime()) / 86400000;
+    if (ageDays > 45) {
+      out.push({
+        id: uid("det"),
+        step: "DETECT",
+        severity: "watch",
+        title: "API feed stale",
+        detail: `Last One-Entry ingest ${Math.round(ageDays)} days ago. Line ministry / agency push is overdue.`,
+      });
+    }
   }
 
   if (out.length === 0) {

@@ -6,8 +6,8 @@ import { CAUSE_LABEL, dateLabel, inrCr } from "../../lib/format";
 import { usePlatform } from "../../lib/store";
 
 export default function ReviewPage() {
-  const { state, advanceDecision } = usePlatform();
-  const pack = state.projects
+  const { monitorProjects, advanceDecision } = usePlatform();
+  const pack = monitorProjects
     .filter((p) => p.health === "critical" || p.decisions.some((d) => d.status !== "closed"))
     .sort((a, b) => b.delayDays - a.delayDays);
 

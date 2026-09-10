@@ -45,13 +45,28 @@ Project data → DETECT → EXPLAIN → SIMULATE → DECIDE → RECORD → REVIE
 
 ## What the app does
 
-- **Portfolio dashboard** — original vs revised cost, expenditure, SPI, critical queue (OCMS / PAIMANA-style).
-- **Project file** — contract, WBS, expenditure S-curve, milestones, cause codes.
-- **Smart automation** — deterministic Detect (SPI/CPI, stalled progress, WBS lag, mobilisation), Explain (MoSPI-style cause codes), Simulate recovery vs idle cost, draft Decide, Record, PRAGATI Review pack.
-- **Flash report** — annex by sector and lifecycle gate.
-- **Role switcher** — MoSPI/IPMD, line ministry, implementing agency, PRAGATI board (demo lens only).
+- **Login / RBAC** — access codes for IPMD, line ministry, agency, PRAGATI, NITI Aayog, Cabinet Secretariat. Public dashboard has no write access.
+- **One Data, One Entry** — DPIIT IIG–PMG nodal key; API pushes; duplicates blocked (`/integration`, `POST /api/ingest`).
+- **₹150 Cr filter** — central monitor. A PMGSY demo work sits below the threshold.
+- **Time & cost analytics** — overrun attribution and pre-construction log (`/analytics`).
+- **Smart automation** — Detect → Explain → Simulate → Decide → Record → Review on the same feed.
+- **Flash + PRAGATI pack** — `/reports` and `GET /api/pragati`.
+- **Standard metrics** — ₹ crore, calendar days, % physical, SPI, CPI.
 
-Eight seeded Indian infrastructure projects (roads, power, freight, port, health, GEC, JJM, metro) so a jury can click through a live story in minutes.
+## Sign in
+
+Password for every demo identity: `pragati`
+
+| Access code | Desk |
+| --- | --- |
+| IPMD-001 | MoSPI / IPMD |
+| MORTH-014 | Line ministry (roads) |
+| NHAI-PIU-VAD | NHAI PIU Vadodara |
+| PMO-PRAGATI | PRAGATI board |
+| NITI-NIE | NITI Aayog |
+| CABSEC-01 | Cabinet Secretariat |
+
+Citizen view: `/public`
 
 ## Run locally
 
@@ -60,26 +75,26 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Use **Open the live demo**, then open **NH-48 six-laning** and click **Run Detect → Decide cycle**.
+Open [http://localhost:3000](http://localhost:3000) → **Sign in with access code**.
 
 ```bash
 npm run build
 ```
 
-## Suggested jury walkthrough (5 minutes)
+## Suggested jury walkthrough
 
-1. Landing page — lifecycle + automation in one slide.
-2. Portfolio — critical NH-48 card.
-3. Project file — WBS lag on Narmada bridge, S-curve stall.
-4. Run the automation cycle — new findings, two simulations, draft decision.
-5. Record / accept the decision.
-6. PRAGATI review — agenda card with named owner.
-7. Flash report — portfolio totals.
+1. Sign in as `IPMD-001` / `pragati`.
+2. Portfolio → NH-48 → run Detect cycle.
+3. Time & cost analytics.
+4. One entry / API — push an update.
+5. Flash report / PRAGATI pack.
+6. Sign out → public dashboard.
+7. Sign in as `NHAI-PIU-VAD` — only NH-48 is writable.
 
 ## Architecture
 
-Next.js 15 (App Router) + TypeScript + Tailwind. State is client-side (`localStorage`) so the demo runs without a database. Automation lives in `src/lib/automation.ts` and can later call a real LLM or OCMS APIs without changing the screens.
+Next.js 15 (App Router) + TypeScript + Tailwind. Session and project state are client-side (`localStorage`). REST stubs: `GET /api/projects?minCost=150`, `POST /api/ingest`, `GET /api/pragati`.
 
 ## Mapping to MoSPI
 
-IPMD already monitors central-sector projects (₹150 Cr+) for time and cost overrun and feeds PRAGATI. PRAGATI NXT is a use-case for a **next** monitor: earlier in the lifecycle (tender → handover), with an automation loop that turns data into decisions instead of only reports.
+IPMD monitors central-sector projects (₹150 Cr+) for time and cost overrun and feeds PRAGATI. PRAGATI NXT is a use-case for that monitor: one-entry data, role firewalls, earlier lifecycle (tender → handover), and an automation loop that turns data into decisions.

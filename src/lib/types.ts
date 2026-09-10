@@ -25,7 +25,8 @@ export const AUTOMATION_STEPS = [
 export type AutomationStep = (typeof AUTOMATION_STEPS)[number];
 
 export type Health = "on-track" | "watch" | "critical" | "completed";
-export type Role = "ipmd" | "ministry" | "agency" | "board";
+export type Role = "ipmd" | "ministry" | "agency" | "board" | "niti" | "cabinet";
+export type DataSource = "DPIIT_IIG_PMG" | "LINE_MINISTRY_API" | "AGENCY_OCMS";
 
 export type CauseCode =
   | "LAND_ACQUISITION"
@@ -131,9 +132,32 @@ export type Project = {
   findings: Finding[];
   simulations: Simulation[];
   decisions: Decision[];
+  source: DataSource;
+  lastIngestAt: string;
+  nieScore: number;
+};
+
+export type Session = {
+  accessCode: string;
+  name: string;
+  org: string;
+  role: Role;
+  ministry?: string;
+  agency?: string;
+};
+
+export type IngestEvent = {
+  id: string;
+  at: string;
+  source: DataSource;
+  projectId: string;
+  actor: string;
+  summary: string;
+  duplicateBlocked: boolean;
 };
 
 export type PlatformState = {
-  role: Role;
+  session: Session | null;
   projects: Project[];
+  ingestLog: IngestEvent[];
 };

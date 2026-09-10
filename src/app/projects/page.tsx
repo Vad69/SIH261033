@@ -10,18 +10,18 @@ import { usePlatform } from "../../lib/store";
 import { LIFECYCLE_STAGES, type LifecycleStage } from "../../lib/types";
 
 export default function ProjectsPage() {
-  const { state } = usePlatform();
+  const { monitorProjects } = usePlatform();
   const [q, setQ] = useState("");
   const [stage, setStage] = useState<LifecycleStage | "ALL">("ALL");
 
   const rows = useMemo(() => {
-    return state.projects.filter((p) => {
+    return monitorProjects.filter((p) => {
       const text = `${p.name} ${p.ministry} ${p.sector} ${p.state} ${p.code}`.toLowerCase();
       const okQ = text.includes(q.toLowerCase());
       const okS = stage === "ALL" || p.stage === stage;
       return okQ && okS;
     });
-  }, [state.projects, q, stage]);
+  }, [monitorProjects, q, stage]);
 
   return (
     <AppShell>

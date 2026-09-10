@@ -33,6 +33,8 @@ export const ROLE_LABEL: Record<Role, string> = {
   ministry: "Line ministry",
   agency: "Implementing agency",
   board: "PRAGATI board",
+  niti: "NITI Aayog",
+  cabinet: "Cabinet Secretariat",
 };
 
 export const CAUSE_LABEL: Record<CauseCode, string> = {

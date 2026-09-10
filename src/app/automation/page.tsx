@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { AppShell } from "../../components/AppShell";
 import { AutomationLoop } from "../../components/AutomationLoop";
+import { canRunAutomation } from "../../lib/auth";
 import { usePlatform } from "../../lib/store";
 
 export default function AutomationPage() {
-  const { state, runCycle } = usePlatform();
-  const queue = state.projects.filter((p) => p.health !== "on-track" && p.health !== "completed");
+  const { monitorProjects, runCycle, state } = usePlatform();
+  const queue = monitorProjects.filter((p) => p.health !== "on-track" && p.health !== "completed");
+  const canRun = state.session ? canRunAutomation(state.session.role) : false;
 
   return (
     <AppShell>
       <p className="stamp text-[var(--saffron)]">Smart automation</p>
       <h1 className="font-serif text-4xl">Detect across the portfolio</h1>
       <p className="mt-2 max-w-3xl text-[var(--ink-soft)]">
-        The engine is deterministic for the demo: SPI/CPI, stalled physical progress, WBS lag, and
-        mobilisation gates. Explain maps to MoSPI-style cause codes. Simulate prices idle time versus
-        recovery. Decide drafts an owner. Record writes the file. Review feeds the PRAGATI pack.
+        The engine sits on the One-Entry feed: Detect (SPI/CPI, stalled progress, stale API, pre-construction
+        slips), Explain (bottleneck tags), Simulate (idle vs recovery cost), Decide, Record, Review into
+        the PRAGATI pack.
       </p>
       <div className="mt-6">
         <AutomationLoop highlight="DETECT" />
@@ -33,6 +35,7 @@ export default function AutomationPage() {
                 SPI {p.spi.toFixed(2)} · {p.findings[0]?.title}
               </p>
             </div>
+            {canRun ? (
             <button
               type="button"
               onClick={() => runCycle(p.id)}
@@ -40,6 +43,7 @@ export default function AutomationPage() {
             >
               Run cycle
             </button>
+            ) : null}
           </li>
         ))}
       </ul>

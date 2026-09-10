@@ -1,23 +1,64 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { canIngest, canReview, canRunAutomation } from "../lib/auth";
 import { ROLE_LABEL } from "../lib/format";
 import { usePlatform } from "../lib/store";
-import type { Role } from "../lib/types";
 
 const NAV = [
   { href: "/dashboard", label: "Portfolio" },
   { href: "/projects", label: "Projects" },
-  { href: "/lifecycle", label: "Lifecycle" },
+  { href: "/analytics", label: "Time & cost" },
+  { href: "/integration", label: "One entry / API" },
   { href: "/automation", label: "Smart automation" },
   { href: "/review", label: "PRAGATI review" },
   { href: "/reports", label: "Flash report" },
 ];
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  auth = "required",
+}: {
+  children: React.ReactNode;
+  auth?: "required" | "public";
+}) {
   const path = usePathname();
-  const { state, setRole, reset } = usePlatform();
+  const router = useRouter();
+  const { state, hydrated, logout } = usePlatform();
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (auth === "required" && !state.session) {
+      router.replace(`/login?next=${encodeURIComponent(path)}`);
+    }
+  }, [hydrated, auth, state.session, path, router]);
+
+  if (!hydrated) {
+    return (
+      <div className="grid-paper min-h-screen p-10">
+        <p className="stamp">Checking access code…</p>
+      </div>
+    );
+  }
+
+  if (auth === "required" && !state.session) {
+    return (
+      <div className="grid-paper min-h-screen p-10">
+        <p className="stamp">Redirecting to login…</p>
+      </div>
+    );
+  }
+
+  const role = state.session?.role;
+  const links = NAV.filter((item) => {
+    if (!role) return item.href === "/dashboard";
+    if (item.href === "/review") return canReview(role);
+    if (item.href === "/automation") return canRunAutomation(role) || role === "ministry";
+    if (item.href === "/integration") return canIngest(role) || role === "board" || role === "niti" || role === "cabinet";
+    return true;
+  });
 
   return (
     <div className="min-h-screen">
@@ -30,11 +71,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             <span>
               <span className="block font-serif text-lg leading-none tracking-tight">PRAGATI NXT</span>
-              <span className="stamp text-[var(--saffron)]">MoSPI · SIH26103</span>
+              <span className="stamp text-[var(--saffron)]">MoSPI · SIH26103 · Secure</span>
             </span>
           </Link>
           <nav className="-mx-1 flex gap-1 overflow-x-auto text-sm">
-            {NAV.map((item) => {
+            {links.map((item) => {
               const active = path === item.href || path.startsWith(`${item.href}/`);
               return (
                 <Link
@@ -47,29 +88,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <div className="flex items-center gap-2">
-            <label className="stamp text-[var(--ink-soft)]">Role</label>
-            <select
-              className="rounded-sm border border-[var(--line)] bg-white px-2 py-1 text-sm"
-              value={state.role}
-              onChange={(e) => setRole(e.target.value as Role)}
-            >
-              {(Object.keys(ROLE_LABEL) as Role[]).map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABEL[r]}
-                </option>
-              ))}
-            </select>
-            <button type="button" className="stamp whitespace-nowrap text-[var(--ink-soft)] underline" onClick={reset}>
-              Reset demo
-            </button>
+          <div className="flex items-center gap-3 text-sm">
+            {state.session ? (
+              <>
+                <span>
+                  <span className="stamp block text-[var(--ink-soft)]">{ROLE_LABEL[state.session.role]}</span>
+                  <span className="text-xs">{state.session.name}</span>
+                </span>
+                <button type="button" className="stamp underline" onClick={() => { logout(); router.push("/login"); }}>
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <Link href="/login" className="stamp underline">
+                Sign in
+              </Link>
+            )}
           </div>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-6">{children}</main>
       <footer className="border-t border-[var(--line)] px-4 py-6 text-center text-xs text-[var(--ink-soft)]">
         Prototype for Smart India Hackathon 2026 · Problem SIH26103 · Ministry of Statistics and Programme Implementation.
-        Not an official Government of India system. Demo data only.
+        Not an official Government of India system. Demo data only. Access is role-gated.
       </footer>
     </div>
   );
