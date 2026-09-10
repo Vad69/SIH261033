@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  --ink: #0c1b2a;
+  --ink-soft: #1c3348;
+  --paper: #f4efe4;
+  --paper-2: #efe6d4;
+  --saffron: #c45c12;
+  --saffron-2: #e07a2f;
+  --green: #1f6b45;
+  --navy: #12325a;
+  --line: rgba(18, 50, 90, 0.12);
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-body), "Segoe UI", sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.india-ribbon {
+  height: 4px;
+  background: linear-gradient(90deg, #ff9933 0 33%, #ffffff 33% 66%, #138808 66%);
+}
+
+.grid-paper {
+  background-image:
+    linear-gradient(rgba(18, 50, 90, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18, 50, 90, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.stamp {
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.card {
+  background: #fffdf8;
+  border: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(12, 27, 42, 0.04);
+}
+
+.health-on-track { background: #e5f4ea; color: #145c32; }
+.health-watch { background: #fff1d6; color: #8a4b00; }
+.health-critical { background: #fde8e4; color: #9b1c1c; }
+.health-completed { background: #e8eef7; color: #12325a; }
