@@ -23,7 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen">
       <div className="india-ribbon" />
       <header className="border-b border-[var(--line)] bg-[#fffdf8]">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 lg:flex-row lg:flex-wrap lg:items-center lg:justify-between">
           <Link href="/" className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-[var(--navy)] font-serif text-lg text-[#f4efe4]">
               प
@@ -33,14 +33,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <span className="stamp text-[var(--saffron)]">MoSPI · SIH26103</span>
             </span>
           </Link>
-          <nav className="flex flex-wrap gap-1 text-sm">
+          <nav className="-mx-1 flex gap-1 overflow-x-auto text-sm">
             {NAV.map((item) => {
               const active = path === item.href || path.startsWith(`${item.href}/`);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`rounded-sm px-3 py-1.5 ${active ? "bg-[var(--navy)] text-[#f4efe4]" : "hover:bg-[var(--paper-2)]"}`}
+                  className={`whitespace-nowrap rounded-sm px-3 py-1.5 ${active ? "bg-[var(--navy)] text-[#f4efe4]" : "hover:bg-[var(--paper-2)]"}`}
                 >
                   {item.label}
                 </Link>
@@ -60,7 +60,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </option>
               ))}
             </select>
-            <button type="button" className="stamp text-[var(--ink-soft)] underline" onClick={reset}>
+            <button type="button" className="stamp whitespace-nowrap text-[var(--ink-soft)] underline" onClick={reset}>
               Reset demo
             </button>
           </div>
